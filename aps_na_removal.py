@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 # Files names
 FILE_NAME_FOR_AVERAGE_APS_TRAINING = 'aps_training_average.csv'
@@ -52,6 +53,19 @@ def calculate_mean(dataset):
         mean_values.append(str(sum_values/i))
     return mean_values
 
+def calculate_meadian(dataset):
+    median_values = []
+    for column_name in dataset.columns:
+        if column_name == "class":
+            continue
+        values = []
+        for value in dataset[column_name]:
+            if value == 'na':
+                continue
+            values.append(float(value))
+        median_values.append(np.median(values))
+    return median_values
+
 
 # Load files
 df_train = pd.read_csv(APS_TRAINING, delimiter=',')
@@ -61,29 +75,37 @@ df_test = pd.read_csv(APS_TEST, delimiter=',')
 df_train.columns = df_train.columns.str.strip()
 df_test.columns = df_test.columns.str.strip()
 
-# For the training data separate neg and pos to calculate the mean and replace the NA with the mean
-df_class_neg = df_train[df_train["class"] == "neg"]
-df_class_pos = df_train[df_train["class"] == "pos"]
-# Calculate the mean for the training and test dataset
-means_neg = calculate_mean(df_class_neg)
-means_pos = calculate_mean(df_class_pos)
-mean_values = calculate_mean(df_test)
+# # For the training data separate neg and pos to calculate the mean and replace the NA with the mean
+# df_class_neg = df_train[df_train["class"] == "neg"]
+# df_class_pos = df_train[df_train["class"] == "pos"]
+# # Calculate the mean for the training and test dataset
+# means_neg = calculate_mean(df_class_neg)
+# means_pos = calculate_mean(df_class_pos)
+# mean_values = calculate_mean(df_test)
+#
+# # Create a index array for where the neg and pos values are
+# consult = []
+# for value in df_train['class']:
+#     if value == 'neg':
+#         consult.append(0)
+#     else:
+#         consult.append(1)
+#
+# # Replace NA with mean
+# df_train = remove_na_training_data(df_train, means_neg, means_pos, consult)
+# df_test = remove_na_test_data(df_test, mean_values)
+#
+# # Write to files
+# df_train.to_csv(FILE_NAME_FOR_AVERAGE_APS_TRAINING, encoding='utf-8', index=False)
+# df_test.to_csv(FILE_NAME_FOR_AVERAGE_APS_TEST, encoding='utf-8', index=False)
 
-# Create a index array for where the neg and pos values are
-consult = []
-for value in df_train['class']:
-    if value == 'neg':
-        consult.append(0)
-    else:
-        consult.append(1)
+medians = calculate_meadian(df_train)
+df_train = remove_na_test_data(df_train, medians)
+df_train.to_csv('median_replacement_aps_training.csv', encoding='utf-8', index=False)
 
-# Replace NA with mean
-df_train = remove_na_training_data(df_train, means_neg, means_pos, consult)
-df_test = remove_na_test_data(df_test, mean_values)
-
-# Write to files
-df_train.to_csv(FILE_NAME_FOR_AVERAGE_APS_TRAINING, encoding='utf-8', index=False)
-df_test.to_csv(FILE_NAME_FOR_AVERAGE_APS_TEST, encoding='utf-8', index=False)
+medians = calculate_meadian(df_test)
+df_test = remove_na_test_data(df_test, medians)
+df_test.to_csv('median_replacement_aps_testing.csv', encoding='utf-8', index=False)
 
 # Just a print
 print('done')
