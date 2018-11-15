@@ -75,29 +75,29 @@ df_test = pd.read_csv(APS_TEST, delimiter=',')
 df_train.columns = df_train.columns.str.strip()
 df_test.columns = df_test.columns.str.strip()
 
-# # For the training data separate neg and pos to calculate the mean and replace the NA with the mean
-# df_class_neg = df_train[df_train["class"] == "neg"]
-# df_class_pos = df_train[df_train["class"] == "pos"]
-# # Calculate the mean for the training and test dataset
-# means_neg = calculate_mean(df_class_neg)
-# means_pos = calculate_mean(df_class_pos)
-# mean_values = calculate_mean(df_test)
-#
-# # Create a index array for where the neg and pos values are
-# consult = []
-# for value in df_train['class']:
-#     if value == 'neg':
-#         consult.append(0)
-#     else:
-#         consult.append(1)
-#
-# # Replace NA with mean
-# df_train = remove_na_training_data(df_train, means_neg, means_pos, consult)
-# df_test = remove_na_test_data(df_test, mean_values)
-#
-# # Write to files
-# df_train.to_csv(FILE_NAME_FOR_AVERAGE_APS_TRAINING, encoding='utf-8', index=False)
-# df_test.to_csv(FILE_NAME_FOR_AVERAGE_APS_TEST, encoding='utf-8', index=False)
+# For the training data separate neg and pos to calculate the mean and replace the NA with the mean
+df_class_neg = df_train[df_train["class"] == "neg"]
+df_class_pos = df_train[df_train["class"] == "pos"]
+# Calculate the mean for the training and test dataset
+means_neg = calculate_mean(df_class_neg)
+means_pos = calculate_mean(df_class_pos)
+mean_values = calculate_mean(df_test)
+
+# Create a index array for where the neg and pos values are
+consult = []
+for value in df_train['class']:
+    if value == 'neg':
+        consult.append(0)
+    else:
+        consult.append(1)
+
+# Replace NA with mean
+df_train = remove_na_training_data(df_train, means_neg, means_pos, consult)
+df_test = remove_na_test_data(df_test, mean_values)
+
+# Write to files
+df_train.to_csv(FILE_NAME_FOR_AVERAGE_APS_TRAINING, encoding='utf-8', index=False)
+df_test.to_csv(FILE_NAME_FOR_AVERAGE_APS_TEST, encoding='utf-8', index=False)
 
 medians = calculate_meadian(df_train)
 df_train = remove_na_test_data(df_train, medians)

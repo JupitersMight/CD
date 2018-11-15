@@ -1,25 +1,5 @@
 import numpy as np
-import scipy as sp
-import matplotlib as plt
 import pandas as pd
-import seaborn as sea
-# %matplotlib inline
-from sklearn.model_selection import train_test_split
-from sklearn.neighbors import  KNeighborsClassifier
-from sklearn.metrics import accuracy_score
-from sklearn.naive_bayes import GaussianNB
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import learning_curve
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, confusion_matrix
-from sklearn import tree
-from sklearn.preprocessing import LabelEncoder,OneHotEncoder, LabelBinarizer
-from sklearn.model_selection import KFold
-from sklearn.model_selection import train_test_split
-from statistics import mean, median
-from copy import copy
-
 
 def calculate_mean(dataset):
     mean_values = []
@@ -62,18 +42,66 @@ def calculate_meadian(dataset):
         median_values.append(np.median(values))
     return median_values
 
+def number_of_outliers(vector):
+    vector = pd.Series(vector)
+    Q1 = vector.quantile(0.25)
+    Q3 = vector.quantile(0.75)
+    IQR = Q3 - Q1
+    low_interval = Q1 - 1.5 * IQR
+    high_interval = Q3 + 1.5 * IQR
+    counter = 0
+    for value in vector:
+        if value < low_interval:
+            counter += 1
+        if value > high_interval:
+            counter += 1
+    return counter
 
 df_training_types = pd.read_csv('C:\\Users\\Leona\\PycharmProjects\\LABS\\project\\apstraining.csv', delimiter=',',na_values=['na'])
 df_training = pd.read_csv('C:\\Users\\Leona\\PycharmProjects\\LABS\\project\\apstraining.csv')
+df_test = pd.read_csv('C:\\Users\\Leona\\PycharmProjects\\LABS\\project\\apstest.csv')
+final_columns = []
+i=0
+for column in df_training.columns:
+    if i == 0:
+        i+=1
+        continue
+    final_columns.append(column)
+    i+=1
 
-df_class_neg = df_training[df_training["class"] == "neg"]
-df_class_pos = df_training[df_training["class"] == "pos"]
+count_outliers = 0
+for column in final_columns:
+    vector = []
+    for value in df_training[column]:
+        if value == 'na':
+            continue
+        vector.append(float(value))
+    count_outliers += number_of_outliers(vector)
+
+print(count_outliers)
+
+count_outliers = 0
+for column in final_columns:
+    vector = []
+    for value in df_test[column]:
+        if value == 'na':
+            continue
+        vector.append(float(value))
+    count_outliers += number_of_outliers(vector)
+
+print(count_outliers)
+
+df_class_neg = df_test[df_test["class"] == "neg"]
+df_class_pos = df_test[df_test["class"] == "pos"]
+
+print(len(df_class_neg))
+print(len(df_class_pos))
 
 means_neg = calculate_mean(df_class_neg)
 means_pos = calculate_mean(df_class_pos)
 
 missings_neg = number_of_missing_values(df_class_neg)
-missings_pos = number_of_missing_values(df_class_neg)
+missings_pos = number_of_missing_values(df_class_pos)
 
 medians_neg = calculate_meadian(df_class_neg)
 medians_pos = calculate_meadian(df_class_pos)
@@ -84,6 +112,8 @@ file.write('Unique classification : '+str(pd.unique(df_training['class']))+'\n')
 file.write('Number of neg rows : '+str(len(df_class_neg['class']))+'\n')
 file.write('Number of pos rows : '+str(len(df_class_pos['class']))+'\n')
 file.write('Column types : '+str(df_training_types.dtypes)+'\n')
+print(sum(missings_neg))
+print(sum(missings_pos))
 
 file.write('class neg : \n')
 i = 0

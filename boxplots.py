@@ -1,8 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import pairwise_distances
-import mpl_toolkits.mplot3d.axes3d as p3
-from sklearn import cluster, datasets, mixture, metrics
 import pandas as pd
 import seaborn as sns
 from sklearn.feature_selection import SelectKBest, chi2
@@ -68,9 +65,7 @@ def draw_heatmap_of_features(dataset, X, y, filename):
     plt.show()
 
 def draw_histogram(column, filename):
-    sns.kdeplot(column)
-    sns.kdeplot(column, bw=.2, label="bw: 0.2")
-    sns.kdeplot(column, bw=2, label="bw: 2")
+    sns.distplot(column)
     plt.savefig(filename, dpi=100)
     plt.legend()
     plt.show()
@@ -113,18 +108,16 @@ for column_name in df_aps.columns:
     if column_name == 'bn_000':
         result.append(normalize_values(df_aps[column_name]))
 
-plt.hist(result, normed=True, bins=30)
-plt.savefig('aps_training_histograma.png', dpi=100)
-plt.show()
+draw_histogram(result, 'aps_training_histograma.png')
 
 plt.boxplot(result)
 plt.savefig('aps_training_boxplot.png', dpi=100)
 plt.show()
 
-# data = pd.read_csv('C:\\Users\\Leona\\PycharmProjects\\LABS\\project\\median_replacement_aps_training.csv')
-# X = data.iloc[:, 1:].values
-# y = data.iloc[:, 0].values
-# draw_heatmap_of_features(data, X, y, 'heatmap_correlation_aps_training.png')
+data = pd.read_csv('C:\\Users\\Leona\\PycharmProjects\\LABS\\project\\median_replacement_aps_training.csv')
+X = data.iloc[:, 1:].values
+y = data.iloc[:, 0].values
+draw_heatmap_of_features(data, X, y, 'heatmap_correlation_aps_training.png')
 
 
 
@@ -140,8 +133,7 @@ for column_name in df_aps.columns:
         result.append(normalize_values(df_aps[column_name]))
 
 
-plt.hist(result, normed=True, bins=30)
-plt.savefig('aps_test_histograma.png', dpi=100)
+draw_histogram(result, 'aps_test_histograma.png')
 plt.show()
 
 plt.boxplot(result)
@@ -149,8 +141,8 @@ plt.savefig('aps_test_boxplot.png', dpi=100)
 plt.show()
 
 
-# data = pd.read_csv('C:\\Users\\Leona\\PycharmProjects\\LABS\\project\\median_replacement_aps_testing.csv')
-# X = data.iloc[:, 1:].values
-# y = data.iloc[:, 0].values
-# draw_heatmap_of_features(data, X, y, 'heatmap_correlation_aps_testing.png')
+data = pd.read_csv('C:\\Users\\Leona\\PycharmProjects\\LABS\\project\\median_replacement_aps_testing.csv')
+X = data.iloc[:, 1:].values
+y = data.iloc[:, 0].values
+draw_heatmap_of_features(data, X, y, 'heatmap_correlation_aps_testing.png')
 

@@ -9,6 +9,7 @@ import statistics
 from sklearn.metrics import roc_curve, auc
 from matplotlib.legend_handler import HandlerLine2D
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 
 def preprocessData(df):
     label_encoder = LabelEncoder()
@@ -62,21 +63,21 @@ def decision_tree(X_train, y_train, X_test, y_test, file, criterion, max_depth, 
     roc_accuracy_testing = auc(false_positive_rate_test, true_positive_rate_test)
     false_positive_rate_train, true_positive_rate_train, thresholds_train = roc_curve(y_train, predict_training)
     roc_accuracy_training = auc(false_positive_rate_train, true_positive_rate_train)
-    #if testing == 1:
-    final_results.append(roc_accuracy_testing*100)
-        # train_results.append(roc_accuracy_training*100)
-        # test_results.append(roc_accuracy_testing*100)
+    if testing == 1:
+        final_results.append(roc_accuracy_testing*100)
+        train_results.append(roc_accuracy_training*100)
+        test_results.append(roc_accuracy_testing*100)
     # Normal Accuracy
     accuracy_testing = accuracy_score(y_test, predict_testing)
     accuracy_training = accuracy_score(y_train, predict_training)
-    # if testing == 1:
-    #     train_results.append(accuracy_training)
-    #     test_results.append(accuracy_testing)
-    # Confusion matrix
-    # conf_m = confusion_matrix(y_test.argmax(axis=1), predict_testing.argmax(axis=1), labels=None, sample_weight=None)
-    # print('Confusion matrix : ')
-    # print(conf_m)
-    # print()
+    if testing == 1:
+        train_results.append(accuracy_training)
+        test_results.append(accuracy_testing)
+    #Confusion matrix
+    conf_m = confusion_matrix(y_test, predict_testing, labels=None, sample_weight=None)
+    print('Confusion matrix : ')
+    print(conf_m)
+    print()
     # Tree built
     if testing == 0:
         dotfile = open(file, 'w')
@@ -151,6 +152,11 @@ features_splits_entropy = []
 
 final_results = []
 
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2)
+
+decision_tree(X_train, y_train, X_test, y_test, 'final_result.dot', 'gini', 5, 0.7, 0.1, 47, 0)
+
+
 i = 1
 for train_index, test_index in skf.split(X, Y):
 
@@ -159,87 +165,87 @@ for train_index, test_index in skf.split(X, Y):
 
     decision_tree(X_train, y_train, X_test, y_test, 'final_result.dot', 'gini', 5, 0.7, 0.1, 47, 0)
     #
-    # # Tunning max_depth
-    # max_depths = np.linspace(1, 32, 32, endpoint=True)
-    # # GINI
-    # train_results = []
-    # test_results = []
-    # for max_depth in max_depths:
-    #     decision_tree(X_train, y_train, X_test, y_test, 'UNDER', 'under.dot', 'gini', max_depth, 2, 1, None, 1)
-    # max_depth_splits_gini.append([train_results, test_results])
-    # # Entropy
-    # train_results = []
-    # test_results = []
-    # for max_depth in max_depths:
-    #     decision_tree(X_train, y_train, X_test, y_test, 'UNDER', 'under.dot', 'entropy', max_depth, 2, 1, None, 1)
-    # max_depth_splits_entropy.append([train_results, test_results])
-    #
-    # # Tunning min_samples
-    # min_samples_splits = np.linspace(0.1, 1.0, 10, endpoint=True)
-    # # GINI
-    # train_results = []
-    # test_results = []
-    # for min_samples_split in min_samples_splits:
-    #     decision_tree(X_train, y_train, X_test, y_test, 'UNDER', 'under.dot', 'gini', None, min_samples_split, 1, None, 1)
-    # samples_split_splits_gini.append([train_results, test_results])
-    # # Entropy
-    # train_results = []
-    # test_results = []
-    # for min_samples_split in min_samples_splits:
-    #     decision_tree(X_train, y_train, X_test, y_test, 'UNDER', 'under.dot', 'entropy', None, min_samples_split, 1, None, 1)
-    # samples_split_splits_entropy.append([train_results, test_results])
-    #
-    # # Tunning min_samples_leaf
-    # min_samples_leafs = np.linspace(0.1, 0.5, 5, endpoint=True)
-    # # GINI
-    # train_results = []
-    # test_results = []
-    # for min_samples_leaf in min_samples_leafs:
-    #     decision_tree(X_train, y_train, X_test, y_test, 'UNDER', 'under.dot', 'gini', None, 2, min_samples_leaf, None, 1)
-    # samples_leaf_splits_gini.append([train_results, test_results])
-    # # Entropy
-    # train_results = []
-    # test_results = []
-    # for min_samples_leaf in min_samples_leafs:
-    #     decision_tree(X_train, y_train, X_test, y_test, 'UNDER', 'under.dot', 'entropy', None, 2, min_samples_leaf, None, 1)
-    # samples_leaf_splits_entropy.append([train_results, test_results])
-    #
-    # # Tunning max_features
-    # max_features = list(range(1, 62))
-    # # GINI
-    # train_results = []
-    # test_results = []
-    # for max_feature in max_features:
-    #     decision_tree(X_train, y_train, X_test, y_test, 'UNDER', 'under.dot', 'gini', None, 2, 1, max_feature, 1)
-    # features_splits_gini.append([train_results, test_results])
-    # # Entropy
-    # train_results = []
-    # test_results = []
-    # for max_feature in max_features:
-    #     decision_tree(X_train, y_train, X_test, y_test, 'UNDER', 'under.dot', 'entropy', None, 2, 1, max_feature, 1)
-    # features_splits_entropy.append([train_results, test_results])
+    # Tunning max_depth
+    max_depths = np.linspace(1, 32, 32, endpoint=True)
+    # GINI
+    train_results = []
+    test_results = []
+    for max_depth in max_depths:
+        decision_tree(X_train, y_train, X_test, y_test, 'UNDER', 'under.dot', 'gini', max_depth, 2, 1, None, 1)
+    max_depth_splits_gini.append([train_results, test_results])
+    # Entropy
+    train_results = []
+    test_results = []
+    for max_depth in max_depths:
+        decision_tree(X_train, y_train, X_test, y_test, 'UNDER', 'under.dot', 'entropy', max_depth, 2, 1, None, 1)
+    max_depth_splits_entropy.append([train_results, test_results])
+
+    # Tunning min_samples
+    min_samples_splits = np.linspace(0.1, 1.0, 10, endpoint=True)
+    # GINI
+    train_results = []
+    test_results = []
+    for min_samples_split in min_samples_splits:
+        decision_tree(X_train, y_train, X_test, y_test, 'UNDER', 'under.dot', 'gini', None, min_samples_split, 1, None, 1)
+    samples_split_splits_gini.append([train_results, test_results])
+    # Entropy
+    train_results = []
+    test_results = []
+    for min_samples_split in min_samples_splits:
+        decision_tree(X_train, y_train, X_test, y_test, 'UNDER', 'under.dot', 'entropy', None, min_samples_split, 1, None, 1)
+    samples_split_splits_entropy.append([train_results, test_results])
+
+    # Tunning min_samples_leaf
+    min_samples_leafs = np.linspace(0.1, 0.5, 5, endpoint=True)
+    # GINI
+    train_results = []
+    test_results = []
+    for min_samples_leaf in min_samples_leafs:
+        decision_tree(X_train, y_train, X_test, y_test, 'UNDER', 'under.dot', 'gini', None, 2, min_samples_leaf, None, 1)
+    samples_leaf_splits_gini.append([train_results, test_results])
+    # Entropy
+    train_results = []
+    test_results = []
+    for min_samples_leaf in min_samples_leafs:
+        decision_tree(X_train, y_train, X_test, y_test, 'UNDER', 'under.dot', 'entropy', None, 2, min_samples_leaf, None, 1)
+    samples_leaf_splits_entropy.append([train_results, test_results])
+
+    # Tunning max_features
+    max_features = list(range(1, 62))
+    # GINI
+    train_results = []
+    test_results = []
+    for max_feature in max_features:
+        decision_tree(X_train, y_train, X_test, y_test, 'UNDER', 'under.dot', 'gini', None, 2, 1, max_feature, 1)
+    features_splits_gini.append([train_results, test_results])
+    # Entropy
+    train_results = []
+    test_results = []
+    for max_feature in max_features:
+        decision_tree(X_train, y_train, X_test, y_test, 'UNDER', 'under.dot', 'entropy', None, 2, 1, max_feature, 1)
+    features_splits_entropy.append([train_results, test_results])
     print(i)
     i += 1
 
 print('Average accuracy for AUC : '+str(np.mean(final_results)))
 print('Standard deviation : '+str(np.std(final_results)))
 
-# max_depth_gini = data_for_graphs(max_depth_splits_gini, 32)
-# samples_split_gini = data_for_graphs(samples_split_splits_gini, 10)
-# samples_leaf_gini = data_for_graphs(samples_leaf_splits_gini, 5)
-# features_gini = data_for_graphs(features_splits_gini, 62)
-#
-# max_depth_entropy = data_for_graphs(max_depth_splits_entropy, 32)
-# samples_split_entropy = data_for_graphs(samples_split_splits_entropy, 10)
-# samples_leaf_entropy = data_for_graphs(samples_leaf_splits_entropy, 5)
-# features_entropy = data_for_graphs(features_splits_entropy, 62)
-#
-# draw_graphic(np.linspace(1, 32, 32, endpoint=True), max_depth_gini, 'col_max_depth_gini.png', 'Tree depth')
-# draw_graphic(np.linspace(0.1, 1.0, 10, endpoint=True), samples_split_gini, 'col_samples_split_gini.png', 'Samples for split')
-# draw_graphic(np.linspace(0.1, 0.5, 5, endpoint=True), samples_leaf_gini, 'col_samples_leaf_gini.png', 'Samples for leaf')
-# draw_graphic(list(range(1, 63)), features_gini, 'col_features_gini.png', 'Number of Features')
-#
-# draw_graphic(np.linspace(1, 32, 32, endpoint=True), max_depth_entropy, 'col_max_depth_entropy.png', 'Tree depth')
-# draw_graphic(np.linspace(0.1, 1.0, 10, endpoint=True), samples_split_entropy, 'col_samples_split_entropy.png', 'Samples for split')
-# draw_graphic(np.linspace(0.1, 0.5, 5, endpoint=True), samples_leaf_entropy, 'col_samples_leaf_entropy.png', 'Samples for leaf')
-# draw_graphic(list(range(1, 63)), features_entropy, 'col_features_entropy.png', 'Number of Features')
+max_depth_gini = data_for_graphs(max_depth_splits_gini, 32)
+samples_split_gini = data_for_graphs(samples_split_splits_gini, 10)
+samples_leaf_gini = data_for_graphs(samples_leaf_splits_gini, 5)
+features_gini = data_for_graphs(features_splits_gini, 62)
+
+max_depth_entropy = data_for_graphs(max_depth_splits_entropy, 32)
+samples_split_entropy = data_for_graphs(samples_split_splits_entropy, 10)
+samples_leaf_entropy = data_for_graphs(samples_leaf_splits_entropy, 5)
+features_entropy = data_for_graphs(features_splits_entropy, 62)
+
+draw_graphic(np.linspace(1, 32, 32, endpoint=True), max_depth_gini, 'col_max_depth_gini.png', 'Tree depth')
+draw_graphic(np.linspace(0.1, 1.0, 10, endpoint=True), samples_split_gini, 'col_samples_split_gini.png', 'Samples for split')
+draw_graphic(np.linspace(0.1, 0.5, 5, endpoint=True), samples_leaf_gini, 'col_samples_leaf_gini.png', 'Samples for leaf')
+draw_graphic(list(range(1, 63)), features_gini, 'col_features_gini.png', 'Number of Features')
+
+draw_graphic(np.linspace(1, 32, 32, endpoint=True), max_depth_entropy, 'col_max_depth_entropy.png', 'Tree depth')
+draw_graphic(np.linspace(0.1, 1.0, 10, endpoint=True), samples_split_entropy, 'col_samples_split_entropy.png', 'Samples for split')
+draw_graphic(np.linspace(0.1, 0.5, 5, endpoint=True), samples_leaf_entropy, 'col_samples_leaf_entropy.png', 'Samples for leaf')
+draw_graphic(list(range(1, 63)), features_entropy, 'col_features_entropy.png', 'Number of Features')

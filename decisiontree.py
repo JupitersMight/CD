@@ -69,22 +69,22 @@ def decision_tree(X_train, y_train, welcome, file, criterion, max_depth, min_sam
     # Normal Accuracy
     accuracy_testing = accuracy_score(y_test, predict_testing)
     accuracy_training = accuracy_score(y_train, predict_training)
-    # if testing == 1:
-    #     train_results.append(accuracy_training)
-    #     test_results.append(accuracy_testing)
+    if testing == 1:
+        train_results.append(accuracy_training)
+        test_results.append(accuracy_testing)
     # Confusion matrix
     conf_m = confusion_matrix(y_test.argmax(axis=1), predict_testing.argmax(axis=1), labels=None, sample_weight=None)
     print('Confusion matrix : ')
     print(conf_m)
     print()
     # Tree built
-    if testing == 0:
-        dotfile = open(file, 'w')
-        tree.export_graphviz(clf, out_file=dotfile, feature_names=df_training_under.columns[2:])
-        dotfile.close()
-    # Print to console the statistics
-    if testing == 0:
-        print_statistics(welcome, accuracy_testing, accuracy_training, statistics.stdev(predict_testing.ravel()), conf_m, roc_accuracy_testing, roc_accuracy_training)
+    # if testing == 0:
+    #     dotfile = open(file, 'w')
+    #     tree.export_graphviz(clf, out_file=dotfile, feature_names=df_training_under.columns[2:])
+    #     dotfile.close()
+    # # Print to console the statistics
+    # if testing == 0:
+    #     print_statistics(welcome, accuracy_testing, accuracy_training, statistics.stdev(predict_testing.ravel()), conf_m, roc_accuracy_testing, roc_accuracy_training)
 
 
 def draw_graphic(function, train_test, filename, parameter_description):
@@ -143,6 +143,7 @@ def data_for_graphs(parameter_array, size_of_array):
 
 # df_training = pd.read_csv('C:\\Users\\Leona\\PycharmProjects\\LABS\\project\\aps_training_average.csv')
 # df_training = preprocessData(df_training)
+# df_training['ab_000'] = df_training['ab_000'].astype(float)
 df_training_under = pd.read_csv('C:\\Users\\Leona\\PycharmProjects\\LABS\\project\\under_sampling_aps_training.csv')
 df_training_under = preprocessData(df_training_under)
 df_training_under['ab_000'] = df_training_under['ab_000'].astype(float)
@@ -183,6 +184,8 @@ samples_leaf_splits_entropy = []
 features_splits_entropy = []
 
 final_results = []
+
+decision_tree(X_train_under, y_train_under, 'FINAL RESULT', 'final_result.dot', 'entropy', 5, 0.7, 0.3, 16, 0)
 
 i = 1
 for train_index, test_index in skf.split(X_train_under, y_train_under.argmax(axis=1)):

@@ -1,24 +1,5 @@
 import numpy as np
-import scipy as sp
-import matplotlib as plt
 import pandas as pd
-import seaborn as sea
-# %matplotlib inline
-from sklearn.model_selection import train_test_split
-from sklearn.neighbors import  KNeighborsClassifier
-from sklearn.metrics import accuracy_score
-from sklearn.naive_bayes import GaussianNB
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import learning_curve
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report, confusion_matrix
-from sklearn import tree
-from sklearn.preprocessing import LabelEncoder,OneHotEncoder, LabelBinarizer
-from sklearn.model_selection import KFold
-from sklearn.model_selection import train_test_split
-from statistics import mean, median
-from copy import copy
 
 
 def calculate_mean(dataset):
@@ -69,29 +50,80 @@ def number_of_positives(column):
             counter += 1
     return counter
 
+def number_of_outliers(vector):
+    Q1 = vector.quantile(0.25)
+    Q3 = vector.quantile(0.75)
+    IQR = Q3 - Q1
+    low_interval = Q1 - 1.5 * IQR
+    high_interval = Q3 + 1.5 * IQR
+    counter = 0
+    for value in vector:
+        if value < low_interval:
+            counter += 1
+        if value > high_interval:
+            counter += 1
+    return counter
+
 df_green = pd.read_csv('C:\\Users\\Leona\\PycharmProjects\\LABS\\project\\col\\green.csv')
 df_hinselmann = pd.read_csv('C:\\Users\\Leona\\PycharmProjects\\LABS\\project\\col\\hinselmann.csv')
 df_schiller = pd.read_csv('C:\\Users\\Leona\\PycharmProjects\\LABS\\project\\col\\schiller.csv')
-
 combined = pd.concat([df_green, df_hinselmann, df_schiller])
 
-experts_0 = combined.iloc[:,len(combined.columns)-7]
-experts_1 = combined.iloc[:,len(combined.columns)-6]
-experts_2 = combined.iloc[:,len(combined.columns)-5]
-experts_3 = combined.iloc[:,len(combined.columns)-4]
-experts_4 = combined.iloc[:,len(combined.columns)-3]
-experts_5 = combined.iloc[:,len(combined.columns)-2]
+final_columns = []
+i=0
+for column in df_green.columns:
+    if i == len(df_green.columns)-7:
+        break
+    i+=1
+    final_columns.append(column)
+
+
+counter = 0
+for column in final_columns:
+    counter += number_of_outliers(df_green[column])
+
+print(counter)
+
+
+counter = 0
+for column in final_columns:
+    counter += number_of_outliers(df_hinselmann[column])
+
+print(counter)
+
+
+counter = 0
+for column in final_columns:
+    counter += number_of_outliers(df_schiller[column])
+
+print(counter)
+
+
+counter = 0
+for column in final_columns:
+    counter += number_of_outliers(combined[column])
+
+print(counter)
+
+
+
 consensus = combined.iloc[:,len(combined.columns)-1]
+
+df_g = df_green[df_green['consensus'] == 1]
+df_h = df_hinselmann[df_hinselmann['consensus'] == 1]
+df_s = df_schiller[df_schiller['consensus'] == 1]
+
+print(len(df_green.iloc[:,0]))
+print(len(df_g.iloc[:,0]))
+print(len(df_hinselmann.iloc[:,0]))
+print(len(df_h.iloc[:,0]))
+print(len(df_schiller.iloc[:,0]))
+print(len(df_s.iloc[:,0]))
+
 
 file = open('statistics_col.txt', 'a')
 file.write('Number of attributes : '+str(len(combined.columns))+' | Number of rows : '+str(len(combined.iloc[:, [1]]))+'\n')
 file.write('Unique classification : '+str(combined.columns[len(combined.columns)-7:len(combined.columns)])+'\n')
-file.write('Number of experts_0 positive rows : '+str(number_of_positives(experts_0))+'\n')
-file.write('Number of experts_1 positive rows : '+str(number_of_positives(experts_1))+'\n')
-file.write('Number of experts_2 positive rows : '+str(number_of_positives(experts_2))+'\n')
-file.write('Number of experts_3 positive rows : '+str(number_of_positives(experts_3))+'\n')
-file.write('Number of experts_3 positive rows : '+str(number_of_positives(experts_3))+'\n')
-file.write('Number of experts_4 positive rows : '+str(number_of_positives(experts_4))+'\n')
 file.write('Number of consensus positive rows : '+str(number_of_positives(consensus))+'\n')
 file.write('Column types : '+str(combined.dtypes)+'\n')
 
