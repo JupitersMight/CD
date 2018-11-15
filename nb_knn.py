@@ -5,7 +5,8 @@ from sklearn.naive_bayes import BernoulliNB, GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder, normalize
+from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
@@ -78,38 +79,42 @@ def Knn_k (data_training, data_test, n_neighbors, data_name):
     if data_training == data_test:
         data = pd.read_csv(data_training)
         X = data.iloc[:, 0:len(data.columns)-1]
-        X = preprocessData(X)
-        X = normalize(X)
+       # X = preprocessData(X)
+        X = StandardScaler().fit_transform(X)
         y = data.iloc[:, len(data.columns)-1]
         trX, tsX, trY, tsY = train_test_split(X, y, test_size=0.2)
     else:
         training = pd.read_csv(data_training)
-        training = preprocessData(training)
-        trX = training.iloc[:, 2:(len(training.columns)-1)].values
-        trX = normalize(trX)
+        #training = preprocessData(training)
+        trX = training.iloc[:, 1:(len(training.columns)-1)].values
+        trX = StandardScaler().fit_transform(trX)
         trY = training.iloc[:, 0].values
         test = pd.read_csv(data_test)
-        test = preprocessData(test)
-        tsX= test.iloc[:, 2:(len(training.columns)-1)].values
+       # test = preprocessData(test)
+        tsX= test.iloc[:, 1:(len(training.columns)-1)].values
         tsY = test.iloc[:, 0].values
 
     neighbors_list = list(range(1, n_neighbors+1, 2))
-    possib_neighbors = []
+    accuracy_test = []
+    accuracy_train = []
+
     for n in neighbors_list:
-        model = KNeighborsRegressor(n_neighbors=n)
-        model.fit(trX, trY)  # fit the model
-        pred = model.predict(tsX)  # make prediction on test set
-        error = math.sqrt(mean_squared_error(tsY, pred))  # calculate rmse
-        possib_neighbors.append(error)  # store rmse values
-        print('RMSE value for k= ', n, 'is:', error)
+        print(n)
+        knn = KNeighborsClassifier(n_neighbors=n)
+        knn.fit(trX, trY)
+        pred_test = knn.predict(tsX)
+        pred_train = knn.predict(trX)
+        accuracy_test.append(accuracy_score(tsY, pred_test))
+        accuracy_train.append(accuracy_score(trY, pred_train))
 
     # plot misclassification error vs k
-    optimal_k = neighbors_list[possib_neighbors.index(min(possib_neighbors))]
-    plt.plot(neighbors_list, possib_neighbors)
-    plt.title('The optimal number of neighbors %s'%(data_name), fontsize=12, fontweight='bold')
-    plt.xlabel('Number of Neighbors K')
-    plt.ylabel('Error')
-    plt.show()
+    plt.figure(figsize=(10, 4))
+    plt.plot(neighbors_list, accuracy_test, color='blue', linestyle='dashed', marker='o', markerfacecolor='red',markersize=10)
+    plt.plot(neighbors_list, accuracy_train, color='black', linestyle='dashed', marker='o', markerfacecolor='red',markersize=10)
+    plt.title('Accuracy vs. K-neighbors')
+    plt.xlabel('K-neighbors')
+    plt.ylabel('Accuracy')
+
 
    # print("The optimal number of neighbors is %d" % optimal_k)
     # plot misclassification error vs k
@@ -118,7 +123,7 @@ def Knn_k (data_training, data_test, n_neighbors, data_name):
     # plt.xlabel('Number of Neighbors K')
     # plt.ylabel('Misclassification Error')
     # plt.show()
-    return optimal_k
+    return 1
 
 
 
@@ -127,35 +132,35 @@ def Knn_k (data_training, data_test, n_neighbors, data_name):
 
 
 
-
-def Knn(data_training, data_test, optimal_k):
-    if data_training == data_test:
-        data = pd.read_csv(data_training)
-        X = data.iloc[:, 0:len(data.columns)-1]
-        X = preprocessData(X)
-        X = normalize(X)
-        y = data.iloc[:, len(data.columns)-1]
-        trX, tsX, trY, tsY = train_test_split(X, y, train_size=0.7, stratify=y)
-    else:
-        training = pd.read_csv(data_training)
-        training = preprocessData(training)
-        trX = training.iloc[:, 2:(len(training.columns)-1)].values
-        trX = normalize(trX)
-        trY = training.iloc[:, 0].values
-        test = pd.read_csv(data_test)
-        test = preprocessData(test)
-        tsX= test.iloc[:, 2:(len(training.columns)-1)].values
-        tsX = normalize(tsX)
-        tsY = test.iloc[:, 0].values
-
-    knn = KNeighborsClassifier(n_neighbors=optimal_k)
-    model1 = knn.fit(trX, trY)
-    predY1 = model1.predict(tsX)
-    cnf_matrixknn = confusion_matrix(tsY, predY1)
-    labels = pd.unique(tsY)
-    plot_confusion_matrix(cnf_matrixknn, labels)
-    acknn = (accuracy_score(tsY, predY1))*100
-    print("accuracy knn :", acknn)
+#
+# def Knn(data_training, data_test, optimal_k):
+#     if data_training == data_test:
+#         data = pd.read_csv(data_training)
+#         X = data.iloc[:, 0:len(data.columns)-1]
+#         X = preprocessData(X)
+#         X = normalize(X)
+#         y = data.iloc[:, len(data.columns)-1]
+#         trX, tsX, trY, tsY = train_test_split(X, y, train_size=0.7, stratify=y)
+#     else:
+#         training = pd.read_csv(data_training)
+#         training = preprocessData(training)
+#         trX = training.iloc[:, 2:(len(training.columns)-1)].values
+#         trX = normalize(trX)
+#         trY = training.iloc[:, 0].values
+#         test = pd.read_csv(data_test)
+#         test = preprocessData(test)
+#         tsX= test.iloc[:, 2:(len(training.columns)-1)].values
+#         tsX = normalize(tsX)
+#         tsY = test.iloc[:, 0].values
+#
+#     knn = KNeighborsClassifier(n_neighbors=optimal_k)
+#     model1 = knn.fit(trX, trY)
+#     predY1 = model1.predict(tsX)
+#     cnf_matrixknn = confusion_matrix(tsY, predY1)
+#     labels = pd.unique(tsY)
+#     plot_confusion_matrix(cnf_matrixknn, labels)
+#     acknn = (accuracy_score(tsY, predY1))*100
+#     print("accuracy knn :", acknn)
 
 
 
@@ -163,21 +168,19 @@ def NaiveBayes (data_training, data_test):
     if data_training == data_test:
         data = pd.read_csv(data_training)
         X = data.iloc[:, 0:len(data.columns)-1]
-        X = preprocessData(X)
-        X = normalize(X)
+        X = StandardScaler().fit_transform(X)
         y = data.iloc[:, len(data.columns)-1]
         trX, tsX, trY, tsY = train_test_split(X, y, train_size=0.7, stratify=y)
     else:
         training_bayes = pd.read_csv(data_training)
-        training_bayes = preprocessData(training_bayes)
         test_bayes = pd.read_csv(data_test)
-        test_bayes = preprocessData(test_bayes)
-        trX = training_bayes.iloc[:, 2:(len(training_bayes.columns)-1)].values
-        trX = normalize(trX)
+        trX = training_bayes.iloc[:, 1:(len(training_bayes.columns)-1)].values
+        trX = StandardScaler().fit_transform(trX)
         trY= training_bayes.iloc[:, 0].values
-        tsX = test_bayes.iloc[:, 2:(len(test_bayes.columns)-1)].values
-        tsX = normalize(tsX)
+        tsX = test_bayes.iloc[:, 1:(len(test_bayes.columns)-1)].values
+        tsX = StandardScaler().fit_transform(tsX)
         tsY = test_bayes.iloc[:, 0].values
+
     #training_bayes['ab_000'] = training_bayes['ab_000'].astype(float)
     #test_bayes['ab_000'] = test_bayes['ab_000'].astype(float)
 
@@ -186,32 +189,34 @@ def NaiveBayes (data_training, data_test):
     #trX = normalize(trX)
 
     #Gaussian Distribution
-    model_gnb = gnb.fit(trX, trY)
-    predY_gnb = model_gnb.predict(tsX)
-    acbayes_gnb = accuracy_score(tsY, predY_gnb)
-    print("accuracy naive bayes Gaussian:", acbayes_gnb)
+    gnb.fit(trX, trY)
+    predY_gnb = gnb.predict(tsX)
+    acbayes_gnb = gnb.score(tsX, tsY)
     cnf_matrix_gnb = confusion_matrix(tsY, predY_gnb)
-    labels = pd.unique(tsY)
-    plot_confusion_matrix(cnf_matrix_gnb, labels)
+    print("accuracy naive bayes Gaussian:", acbayes_gnb)
+    plot_confusion_matrix(cnf_matrix_gnb, ['neg', 'pos'])
 
     # Bernoulli Distribution
-    model_bnb = bnb.fit(trX, trY)
-    predY_bnb = model_bnb.predict(tsX)
-    acbayes_bnb = accuracy_score(tsY, predY_bnb)
+    bnb.fit(trX, trY)
+    predY_bnb = bnb.predict(tsX)
+    acbayes_bnb = bnb.score(tsX, tsY)
     print("accuracy naive bayes Bernoulli:", acbayes_bnb)
-    cnf_matrix_bnb = confusion_matrix(tsY, predY_gnb)
-    labels = pd.unique(tsY)
-    plot_confusion_matrix(cnf_matrix_bnb, labels)
+    cnf_matrix_bnb = confusion_matrix(tsY, predY_bnb)
+    plot_confusion_matrix(cnf_matrix_bnb, ['neg', 'pos'])
 
-    #cross validation
+
+  ###  cross validation
+
+
     scores_cv = list(range(2, 10))
     scores_cv_bnb =[]
     scores_cv_gnb =[]
     for i in scores_cv:
-        scores_bnb = cross_val_score(bnb, tsX, tsY, cv=i, scoring='accuracy') #training or test
-        scores_gnb = cross_val_score(gnb, tsX, tsY, cv=i, scoring='accuracy')
+        scores_bnb = cross_val_score(bnb, trX, trY, cv=i, scoring='accuracy')
+        scores_gnb = cross_val_score(gnb, trX, trY, cv=i, scoring='accuracy')
         scores_cv_bnb.append(scores_bnb.mean()*100)
         scores_cv_gnb.append(scores_gnb.mean()*100)
+
 
     plt.plot(scores_cv, scores_cv_bnb)
     plt.title('Naive Bayes Bernoulli', fontsize=12, fontweight='bold')
@@ -229,25 +234,34 @@ def NaiveBayes (data_training, data_test):
 
 
 
+
+
+
 source1 ="aps_training_without_outliers.csv"
 source2 ="aps_test_average.csv"
 source3 = "smote_over_sampling_col_without_outliers.csv"
 source4 ="under_sampling_aps_training_without_outliers.csv"
 source5 = "aps_training_without_outliers.csv"
 source6 = "aps_training_average.csv"
+source7 ="under_sampling_aps_training.csv"
 
 
 
 
-neighbors = 25
-optimal_k = Knn_k(source4, source2, neighbors, "-APS")
-print(optimal_k)
-Knn (source4, source2, neighbors)
-NaiveBayes(source4, source2)
+
+neighbors = 15
+#optimal_k = Knn_k(source6, source2, neighbors, "-APS")
+#print(optimal_k)
+#Knn (source6, source2, neighbors)
+NaiveBayes(source6, source2)
 ####################################Col########################
-optimal_k = Knn_k(source3, source3, neighbors, "-COL")
-print(optimal_k)
-Knn (source3, source3, neighbors)
+
+print ("/n")
+
+print ("COOOOOOOOOOOOOOOOOOOOOLLLLLLLLLLLL")
+#optimal_k = Knn_k(source3, source3, neighbors, "-COL")
+#print(optimal_k)
+#Knn (source3, source3, neighbors)
 NaiveBayes(source3, source3)
 
 
