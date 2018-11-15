@@ -123,7 +123,6 @@ def Knn_k (data_training, data_test, n_neighbors, data_name):
     # plt.xlabel('Number of Neighbors K')
     # plt.ylabel('Misclassification Error')
     # plt.show()
-    return 1
 
 
 
@@ -250,18 +249,14 @@ source7 ="under_sampling_aps_training.csv"
 
 
 neighbors = 15
-#optimal_k = Knn_k(source6, source2, neighbors, "-APS")
-#print(optimal_k)
-#Knn (source6, source2, neighbors)
+Knn_k(source6, source2, neighbors, "-APS")
 NaiveBayes(source6, source2)
 ####################################Col########################
 
 print ("/n")
 
 print ("COOOOOOOOOOOOOOOOOOOOOLLLLLLLLLLLL")
-#optimal_k = Knn_k(source3, source3, neighbors, "-COL")
-#print(optimal_k)
-#Knn (source3, source3, neighbors)
+Knn_k(source3, source3, neighbors, "-COL")
 NaiveBayes(source3, source3)
 
 
