@@ -8,13 +8,11 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, normalize
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import confusion_matrix
-from matplotlib.colors import ListedColormap
-from sklearn import neighbors, datasets
 from sklearn.model_selection import train_test_split
-from sklearn.svm import SVC
-from sklearn.datasets import load_digits
-from sklearn.model_selection import learning_curve
-from sklearn.model_selection import ShuffleSplit
+from sklearn import neighbors
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.metrics import mean_squared_error
+import math
 
 def preprocessData(df):
     label_encoder = LabelEncoder()
@@ -49,7 +47,7 @@ def plot_confusion_matrix(cnf_matrix, classesNames, normalize=False, cmap=plt.cm
         title = "Normalized confusion matrix"
     else:
         cm = cnf_matrix
-        title = 'Confusion matrix, without normalization'
+        title = 'Confusion matrix'
 
     print(cm)
 
@@ -76,33 +74,50 @@ def plot_confusion_matrix(cnf_matrix, classesNames, normalize=False, cmap=plt.cm
 
 
 
-def Knn_k (data_training, data_test, n_neighbors):
+def Knn_k (data_training, data_test, n_neighbors, data_name):
     if data_training == data_test:
-        test = pd.read_csv(data_test)
-        test = preprocessData(test)
-        tsX = test.iloc[:, 0:len(test.columns)-1]
-        tsY = test.iloc[:, len(test.columns)-1]
+        data = pd.read_csv(data_training)
+        X = data.iloc[:, 0:len(data.columns)-1]
+        X = preprocessData(X)
+        X = normalize(X)
+        y = data.iloc[:, len(data.columns)-1]
+        trX, tsX, trY, tsY = train_test_split(X, y, test_size=0.2)
     else:
+        training = pd.read_csv(data_training)
+        training = preprocessData(training)
+        trX = training.iloc[:, 2:(len(training.columns)-1)].values
+        trX = normalize(trX)
+        trY = training.iloc[:, 0].values
         test = pd.read_csv(data_test)
         test = preprocessData(test)
-        tsX = test.iloc[:, 2:(len(test.columns)-1)].values
+        tsX= test.iloc[:, 2:(len(training.columns)-1)].values
         tsY = test.iloc[:, 0].values
-    neighbors = list(range(1, n_neighbors+1, 25))
+
+    neighbors_list = list(range(1, n_neighbors+1, 2))
     possib_neighbors = []
-    for n in neighbors:
-        knn = KNeighborsClassifier(n_neighbors=n)
-        scores = cross_val_score(knn, tsX, tsY, cv=10, scoring='accuracy')
-        possib_neighbors.append(scores.mean())
-    # determining best k
-    MSE = [1 - x for x in possib_neighbors]
-    optimal_k = neighbors[MSE.index(min(MSE))]
-    print("The optimal number of neighbors is %d" % optimal_k)
+    for n in neighbors_list:
+        model = KNeighborsRegressor(n_neighbors=n)
+        model.fit(trX, trY)  # fit the model
+        pred = model.predict(tsX)  # make prediction on test set
+        error = math.sqrt(mean_squared_error(tsY, pred))  # calculate rmse
+        possib_neighbors.append(error)  # store rmse values
+        print('RMSE value for k= ', n, 'is:', error)
+
     # plot misclassification error vs k
-    plt.plot(neighbors, MSE)
-    plt.title('The optimal number of neighbors', fontsize=12, fontweight='bold')
+    optimal_k = neighbors_list[possib_neighbors.index(min(possib_neighbors))]
+    plt.plot(neighbors_list, possib_neighbors)
+    plt.title('The optimal number of neighbors %s'%(data_name), fontsize=12, fontweight='bold')
     plt.xlabel('Number of Neighbors K')
-    plt.ylabel('Misclassification Error')
+    plt.ylabel('Error')
     plt.show()
+
+   # print("The optimal number of neighbors is %d" % optimal_k)
+    # plot misclassification error vs k
+    # plt.plot(n_neighbors, possib_neighbors)
+    # plt.title('The optimal number of neighbors', fontsize=12, fontweight='bold')
+    # plt.xlabel('Number of Neighbors K')
+    # plt.ylabel('Misclassification Error')
+    # plt.show()
     return optimal_k
 
 
@@ -118,17 +133,21 @@ def Knn(data_training, data_test, optimal_k):
         data = pd.read_csv(data_training)
         X = data.iloc[:, 0:len(data.columns)-1]
         X = preprocessData(X)
+        X = normalize(X)
         y = data.iloc[:, len(data.columns)-1]
-        trX, tsX, trY, tsY = train_test_split(X, y, train_size=0.6, stratify=y)
+        trX, tsX, trY, tsY = train_test_split(X, y, train_size=0.7, stratify=y)
     else:
         training = pd.read_csv(data_training)
         training = preprocessData(training)
         trX = training.iloc[:, 2:(len(training.columns)-1)].values
+        trX = normalize(trX)
         trY = training.iloc[:, 0].values
         test = pd.read_csv(data_test)
         test = preprocessData(test)
         tsX= test.iloc[:, 2:(len(training.columns)-1)].values
+        tsX = normalize(tsX)
         tsY = test.iloc[:, 0].values
+
     knn = KNeighborsClassifier(n_neighbors=optimal_k)
     model1 = knn.fit(trX, trY)
     predY1 = model1.predict(tsX)
@@ -145,16 +164,19 @@ def NaiveBayes (data_training, data_test):
         data = pd.read_csv(data_training)
         X = data.iloc[:, 0:len(data.columns)-1]
         X = preprocessData(X)
+        X = normalize(X)
         y = data.iloc[:, len(data.columns)-1]
-        trX, tsX, trY, tsY = train_test_split(X, y, train_size=0.6, stratify=y)
+        trX, tsX, trY, tsY = train_test_split(X, y, train_size=0.7, stratify=y)
     else:
         training_bayes = pd.read_csv(data_training)
         training_bayes = preprocessData(training_bayes)
         test_bayes = pd.read_csv(data_test)
         test_bayes = preprocessData(test_bayes)
-        trX=training_bayes.iloc[:, 2:(len(training_bayes.columns)-1)].values
-        trY=training_bayes.iloc[:, 0].values
+        trX = training_bayes.iloc[:, 2:(len(training_bayes.columns)-1)].values
+        trX = normalize(trX)
+        trY= training_bayes.iloc[:, 0].values
         tsX = test_bayes.iloc[:, 2:(len(test_bayes.columns)-1)].values
+        tsX = normalize(tsX)
         tsY = test_bayes.iloc[:, 0].values
     #training_bayes['ab_000'] = training_bayes['ab_000'].astype(float)
     #test_bayes['ab_000'] = test_bayes['ab_000'].astype(float)
@@ -207,18 +229,25 @@ def NaiveBayes (data_training, data_test):
 
 
 
-
 source1 ="aps_training_without_outliers.csv"
 source2 ="aps_test_average.csv"
 source3 = "smote_over_sampling_col_without_outliers.csv"
+source4 ="under_sampling_aps_training_without_outliers.csv"
+source5 = "aps_training_without_outliers.csv"
+source6 = "aps_training_average.csv"
 
 
 
 
-neighbors = 100
-optimal_k = Knn_k(source3, source3, neighbors)
+neighbors = 25
+optimal_k = Knn_k(source4, source2, neighbors, "-APS")
 print(optimal_k)
-Knn (source3, source3, optimal_k)
+Knn (source4, source2, neighbors)
+NaiveBayes(source4, source2)
+####################################Col########################
+optimal_k = Knn_k(source3, source3, neighbors, "-COL")
+print(optimal_k)
+Knn (source3, source3, neighbors)
 NaiveBayes(source3, source3)
 
 
